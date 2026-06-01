@@ -1,7 +1,7 @@
-// Build an index of extracted PDF text
 let pdfIndex = [];
 
-// Load and index all PDFs listed in data.json async function loadAndIndexPDFs() {
+// Load and index all PDFs listed in data.json
+async function loadAndIndexPDFs() {
     console.log("Loading data.json...");
     const response = await fetch("data.json");
     const docs = await response.json();
@@ -78,5 +78,7 @@ async function runSearch() {
     });
 }
 
-// Start indexing as soon as the page loads window.addEventListener("load", loadAndIndexPDFs);
+// Start indexing as soon as the page loads
+window.addEventListener("load", loadAndIndexPDFs);
+
 
