@@ -1,6 +1,45 @@
+// Build an index of extracted PDF text
+let pdfIndex = [];
+
+// Load and index all PDFs listed in data.json async function loadAndIndexPDFs() {
+    console.log("Loading data.json...");
+    const response = await fetch("data.json");
+    const docs = await response.json();
+
+    for (const doc of docs) {
+        console.log("Loading PDF:", doc.file);
+
+        try {
+            const pdf = await pdfjsLib.getDocument(doc.file).promise;
+            let fullText = "";
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const content = await page.getTextContent();
+                const strings = content.items.map(item => item.str).join(" ");
+                fullText += " " + strings;
+            }
+
+            pdfIndex.push({
+                title: doc.title,
+                file: doc.file,
+                text: fullText
+            });
+
+            console.log("Indexed:", doc.file);
+
+        } catch (err) {
+            console.error("Error loading PDF:", doc.file, err);
+        }
+    }
+
+    console.log("Indexing complete.");
+}
+
+// Run a keyword search
 async function runSearch() {
-    const keyword = document.getElementById('searchInput').value.trim();
-    const resultsContainer = document.getElementById('results');
+    const keyword = document.getElementById("searchInput").value.trim();
+    const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = "";
 
     if (!keyword) {
@@ -8,11 +47,13 @@ async function runSearch() {
         return;
     }
 
-    const response = await fetch('data.json');
-    const docs = await response.json();
+    if (pdfIndex.length === 0) {
+        resultsContainer.innerHTML = "<p>Indexing PDFs… please wait a moment and try again.</p>";
+        return;
+    }
 
-    const results = docs.filter(doc =>
-        doc.content.toLowerCase().includes(keyword.toLowerCase())
+    const results = pdfIndex.filter(doc =>
+        doc.text.toLowerCase().includes(keyword.toLowerCase())
     );
 
     if (results.length === 0) {
@@ -21,20 +62,21 @@ async function runSearch() {
     }
 
     results.forEach(doc => {
-        const snippetIndex = doc.content.toLowerCase().indexOf(keyword.toLowerCase());
-        const snippetStart = Math.max(0, snippetIndex - 60);
-        const snippetEnd = Math.min(doc.content.length, snippetIndex + 60);
+        const idx = doc.text.toLowerCase().indexOf(keyword.toLowerCase());
+        const start = Math.max(0, idx - 60);
+        const end = Math.min(doc.text.length, idx + 60);
+        const snippet = doc.text.substring(start, end);
 
-        const snippet = doc.content.substring(snippetStart, snippetEnd);
-
-        const div = document.createElement('div');
+        const div = document.createElement("div");
         div.className = "result";
-
         div.innerHTML = `
             <h3>${doc.title}</h3>
             <p>... ${snippet} ...</p>
+            <a href="${doc.file}" target="_blank">Open PDF</a>
         `;
-
         resultsContainer.appendChild(div);
     });
 }
+
+// Start indexing as soon as the page loads window.addEventListener("load", loadAndIndexPDFs);
+
