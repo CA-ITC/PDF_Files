@@ -70,7 +70,7 @@ async function runSearch() {
                     <h3>${doc.title}</h3>
                     <p><strong>Page ${pageNumber + 1}</strong></p>
                     <p>... ${snippet} ...</p>
-                    <a href="${doc.file}?raw=1#page=${pageNumber + 1}" target="_blank">
+                    <a href="${doc.file}#page=${pageNumber + 1}" target="_blank">
                         Open to Page ${pageNumber + 1}
                     </a>
                 `;
