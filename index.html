@@ -15,11 +15,12 @@
 </div>
 
 <div id="results"></div>
-<script type="module">
-    import * as pdfjsLib from './pdf.mjs';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.mjs';
-    window.pdfjsLib = pdfjsLib;
-</script>
+<script src="pdf.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js'; </script>
+
+<script src="search-v4.js"></script>
+
 
 <script src="search-v2.js"></script>
 </body>
