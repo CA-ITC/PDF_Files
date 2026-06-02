@@ -1,7 +1,6 @@
 let pdfIndex = [];
 
-// Load and index all PDFs listed in data-v3.json
-async function loadAndIndexPDFs() {
+// Load and index all PDFs listed in data-v4.json async function loadAndIndexPDFs() {
     console.log("Loading data-v4.json...");
     const response = await fetch("data-v4.json");
     const docs = await response.json();
@@ -11,19 +10,20 @@ async function loadAndIndexPDFs() {
 
         try {
             const pdf = await pdfjsLib.getDocument(doc.file).promise;
-            let fullText = "";
+
+            let pages = []; // store text per page
 
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
                 const content = await page.getTextContent();
                 const strings = content.items.map(item => item.str).join(" ");
-                fullText += " " + strings;
+                pages.push(strings);
             }
 
             pdfIndex.push({
                 title: doc.title,
                 file: doc.file,
-                text: fullText
+                pages: pages
             });
 
             console.log("Indexed:", doc.file);
@@ -52,31 +52,36 @@ async function runSearch() {
         return;
     }
 
-    const results = pdfIndex.filter(doc =>
-        doc.text.toLowerCase().includes(keyword.toLowerCase())
-    );
+    let foundAny = false;
 
-    if (results.length === 0) {
-        resultsContainer.innerHTML = "<p>No matches found.</p>";
-        return;
-    }
+    pdfIndex.forEach(doc => {
+        doc.pages.forEach((pageText, pageNumber) => {
+            const idx = pageText.toLowerCase().indexOf(keyword.toLowerCase());
+            if (idx !== -1) {
+                foundAny = true;
 
-    results.forEach(doc => {
-        const idx = doc.text.toLowerCase().indexOf(keyword.toLowerCase());
-        const start = Math.max(0, idx - 60);
-        const end = Math.min(doc.text.length, idx + 60);
-        const snippet = doc.text.substring(start, end);
+                const start = Math.max(0, idx - 60);
+                const end = Math.min(pageText.length, idx + 60);
+                const snippet = pageText.substring(start, end);
 
-        const div = document.createElement("div");
-        div.className = "result";
-        div.innerHTML = `
-            <h3>${doc.title}</h3>
-            <p>... ${snippet} ...</p>
-            <a href="${doc.file}" target="_blank">Open PDF</a>
-        `;
-        resultsContainer.appendChild(div);
+                const div = document.createElement("div");
+                div.className = "result";
+                div.innerHTML = `
+                    <h3>${doc.title}</h3>
+                    <p><strong>Page ${pageNumber + 1}</strong></p>
+                    <p>... ${snippet} ...</p>
+                    <a href="${doc.file}#page=${pageNumber + 1}" target="_blank">
+                        Open to Page ${pageNumber + 1}
+                    </a>
+                `;
+                resultsContainer.appendChild(div);
+            }
+        });
     });
+
+    if (!foundAny) {
+        resultsContainer.innerHTML = "<p>No matches found.</p>";
+    }
 }
 
-// Start indexing as soon as the page loads
-window.addEventListener("load", loadAndIndexPDFs);
+// Start indexing as soon as the page loads window.addEventListener("load", loadAndIndexPDFs);
