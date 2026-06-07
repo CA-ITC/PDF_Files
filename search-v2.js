@@ -1,6 +1,7 @@
 let pdfIndex = [];
 
-// Load and index all PDFs listed in data-v4.json async function loadAndIndexPDFs() {
+// Load and index all PDFs listed in data-v4.json 
+async function loadAndIndexPDFs() {
     console.log("Loading data-v4.json...");
     const response = await fetch("data-v4.json");
     const docs = await response.json();
@@ -79,9 +80,10 @@ async function runSearch() {
         });
     });
 
-    if (!foundAny) {
-        resultsContainer.innerHTML = "<p>No matches found.</p>";
-    }
+   if (!foundAny) {
+    resultsContainer.innerHTML = "<p>No matches found.</p>";
+}
 }
 
-// Start indexing as soon as the page loads window.addEventListener("load", loadAndIndexPDFs);
+// Start indexing as soon as the page loads
+window.addEventListener("load", loadAndIndexPDFs);
