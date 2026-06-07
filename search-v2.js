@@ -1,6 +1,6 @@
 let pdfIndex = [];
 
-// Load and index all PDFs listed in data-v4.json 
+// Load and index all PDFs listed in data-v4.json
 async function loadAndIndexPDFs() {
     console.log("Loading data-v4.json...");
     const response = await fetch("data-v4.json");
